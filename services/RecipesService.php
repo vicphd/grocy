@@ -16,59 +16,49 @@ class RecipesService extends BaseService
 		$recipe = $this->getDataBase()->recipes($recipeId);
 		$recipePositions = $this->GetRecipesPosResolved();
 
-		if ($excludedProductIds == null)
-		{
+		if ($excludedProductIds == null) {
 			$excludedProductIds = [];
 		}
 
-		foreach ($recipePositions as $recipePosition)
-		{
-			if ($recipePosition->recipe_id == $recipeId && !in_array($recipePosition->product_id, $excludedProductIds))
-			{
+		foreach ($recipePositions as $recipePosition) {
+			if ($recipePosition->recipe_id == $recipeId && !in_array($recipePosition->product_id, $excludedProductIds)) {
 				$product = $this->getDataBase()->products($recipePosition->product_id);
 				$toOrderAmount = round(($recipePosition->missing_amount - $recipePosition->amount_on_shopping_list), 2);
 				$quId = $product->qu_id_purchase;
 
-				if ($recipe->not_check_shoppinglist == 1)
-				{
+				if ($recipe->not_check_shoppinglist == 1) {
 					$toOrderAmount = round($recipePosition->missing_amount, 2);
 				}
 
 				// When the recipe ingredient option "Only check if any amount is in stock" is enabled,
 				// any QU can be used and the amount is not based on qu_stock then
 				// => Do the unit conversion here (if any)
-				if ($recipePosition->only_check_single_unit_in_stock == 1)
-				{
+				if ($recipePosition->only_check_single_unit_in_stock == 1) {
 					$conversion = $this->getDatabase()->cache__quantity_unit_conversions_resolved()->where('product_id = :1 AND from_qu_id = :2 AND to_qu_id = :3', $recipePosition->product_id, $recipePosition->qu_id, $product->qu_id_stock)->fetch();
-					if ($conversion != null)
-					{
+					if ($conversion != null) {
 						$toOrderAmount = $toOrderAmount * $conversion->factor;
-					}
-					else
-					{
+					} else {
 						// No conversion exists => take the amount/unit as is
 						$quId = $recipePosition->qu_id;
 						$toOrderAmount = $recipePosition->missing_amount;
 					}
 				}
 
-				if ($toOrderAmount > 0)
-				{
+				if ($toOrderAmount > 0) {
 					$alreadyExistingEntry = $this->getDatabase()->shopping_list()->where('product_id', $recipePosition->product_id)->fetch();
-					if ($alreadyExistingEntry)
-					{
+					if ($alreadyExistingEntry) {
 						// Update
 						$alreadyExistingEntry->update([
-							'amount' => $alreadyExistingEntry->amount + $toOrderAmount
+							'amount' => $alreadyExistingEntry->amount + $toOrderAmount,
+							'recipe_id' => $recipeId
 						]);
-					}
-					else
-					{
+					} else {
 						// Insert
 						$shoppinglistRow = $this->getDataBase()->shopping_list()->createRow([
 							'product_id' => $recipePosition->product_id,
 							'amount' => $toOrderAmount,
-							'qu_id' => $quId
+							'qu_id' => $quId,
+							'recipe_id' => $recipeId
 						]);
 						$shoppinglistRow->save();
 					}
@@ -79,8 +69,7 @@ class RecipesService extends BaseService
 
 	public function ConsumeRecipe($recipeId)
 	{
-		if (!$this->RecipeExists($recipeId))
-		{
+		if (!$this->RecipeExists($recipeId)) {
 			throw new \Exception('Recipe does not exist');
 		}
 
@@ -88,24 +77,18 @@ class RecipesService extends BaseService
 		$recipePositions = $this->getDatabase()->recipes_pos_resolved()->where('recipe_id', $recipeId)->fetchAll();
 
 		$this->getDatabaseService()->GetDbConnectionRaw()->beginTransaction();
-		try
-		{
-			foreach ($recipePositions as $recipePosition)
-			{
-				if ($recipePosition->only_check_single_unit_in_stock == 0 && $recipePosition->stock_amount > 0)
-				{
+		try {
+			foreach ($recipePositions as $recipePosition) {
+				if ($recipePosition->only_check_single_unit_in_stock == 0 && $recipePosition->stock_amount > 0) {
 					$amount = $recipePosition->recipe_amount;
-					if ($recipePosition->stock_amount > 0 && $recipePosition->stock_amount < $recipePosition->recipe_amount)
-					{
+					if ($recipePosition->stock_amount > 0 && $recipePosition->stock_amount < $recipePosition->recipe_amount) {
 						$amount = $recipePosition->stock_amount;
 					}
 
 					$this->getStockService()->ConsumeProduct($recipePosition->product_id, $amount, false, StockService::TRANSACTION_TYPE_CONSUME, 'default', $recipeId, null, $transactionId, true, true);
 				}
 			}
-		}
-		catch (\Exception $ex)
-		{
+		} catch (\Exception $ex) {
 			$this->getDatabaseService()->GetDbConnectionRaw()->rollback();
 			throw $ex;
 		}
@@ -114,8 +97,7 @@ class RecipesService extends BaseService
 		$recipe = $this->getDatabase()->recipes()->where('id = :1', $recipeId)->fetch();
 		$productId = $recipe->product_id;
 		$amount = $recipe->desired_servings;
-		if ($recipe->type == self::RECIPE_TYPE_MEALPLAN_SHADOW)
-		{
+		if ($recipe->type == self::RECIPE_TYPE_MEALPLAN_SHADOW) {
 			// Use "Produces product" of the original recipe
 			$mealPlanEntry = $this->getDatabase()->meal_plan()->where('id = :1', explode('#', $recipe->name)[1])->fetch();
 			$recipe = $this->getDatabase()->recipes()->where('id = :1', $mealPlanEntry->recipe_id)->fetch();
@@ -123,8 +105,7 @@ class RecipesService extends BaseService
 			$amount = $mealPlanEntry->recipe_servings;
 		}
 
-		if (!empty($productId))
-		{
+		if (!empty($productId)) {
 			$product = $this->getDatabase()->products()->where('id = :1', $productId)->fetch();
 			$recipeResolvedRow = $this->getDatabase()->recipes_resolved()->where('recipe_id = :1', $recipeId)->fetch();
 			$this->getStockService()->AddProduct($productId, $amount, null, StockService::TRANSACTION_TYPE_SELF_PRODUCTION, date('Y-m-d'), $recipeResolvedRow->costs_per_serving, null, null, $dummyTransactionId, $product->default_stock_label_type, true, $recipe->name);
@@ -139,20 +120,16 @@ class RecipesService extends BaseService
 
 	public function GetRecipesResolved($customWhere = null): Result
 	{
-		if ($customWhere == null)
-		{
+		if ($customWhere == null) {
 			return $this->getDatabase()->recipes_resolved();
-		}
-		else
-		{
+		} else {
 			return $this->getDatabase()->recipes_resolved()->where($customWhere);
 		}
 	}
 
 	public function CopyRecipe($recipeId)
 	{
-		if (!$this->RecipeExists($recipeId))
-		{
+		if (!$this->RecipeExists($recipeId)) {
 			throw new \Exception('Recipe does not exist');
 		}
 

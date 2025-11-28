@@ -5,27 +5,25 @@
 @section('title', $__t('Shopping list'))
 
 @push('pageStyles')
-<style>
-	#shopping-list-print-shadow-table_wrapper .dataTable>thead>tr>th[class*="sort"]:before,
-	#shopping-list-print-shadow-table_wrapper .dataTable>thead>tr>th[class*="sort"]:after {
-		content: "" !important;
-	}
-</style>
+	<style>
+		#shopping-list-print-shadow-table_wrapper .dataTable>thead>tr>th[class*="sort"]:before,
+		#shopping-list-print-shadow-table_wrapper .dataTable>thead>tr>th[class*="sort"]:after {
+			content: "" !important;
+		}
+	</style>
 @endpush
 
 @push('pageScripts')
-<script src="{{ $U('/viewjs/purchase.js?v=', true) }}{{ $version }}"></script>
+	<script src="{{ $U('/viewjs/purchase.js?v=', true) }}{{ $version }}"></script>
 @endpush
 
 @php
-if(boolval($userSettings['shopping_list_round_up']))
-{
-foreach($listItems as $listItem)
-{
-$listItem->amount = ceil($listItem->amount);
-$listItem->last_price_total = $listItem->price * $listItem->amount;
-}
-}
+	if (boolval($userSettings['shopping_list_round_up'])) {
+		foreach ($listItems as $listItem) {
+			$listItem->amount = ceil($listItem->amount);
+			$listItem->last_price_total = $listItem->price * $listItem->amount;
+		}
+	}
 @endphp
 
 @section('content')
@@ -36,9 +34,9 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 				@yield('title')
 			</h2>
 			@if(GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING)
-			<h2 class="mb-0 mr-auto order-3 order-md-1 width-xs-sm-100">
-				<span class="text-muted small">{!! $__t('%s total value', '<span class="locale-number locale-number-currency">' . SumArrayValue($listItems, 'last_price_total') . '</span>') !!}</span>
-			</h2>
+				<h2 class="mb-0 mr-auto order-3 order-md-1 width-xs-sm-100">
+					<span class="text-muted small">{!! $__t('%s total value', '<span class="locale-number locale-number-currency">' . SumArrayValue($listItems, 'last_price_total') . '</span>') !!}</span>
+				</h2>
 			@endif
 			<div class="float-right @if($embedded) pr-5 @endif">
 				<button class="btn btn-primary responsive-button d-md-none mt-2 order-1 order-md-3 show-as-dialog-link"
@@ -61,47 +59,57 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 			<div class="related-links collapse d-md-flex order-2 width-xs-sm-100"
 				id="related-links">
 				@if(GROCY_FEATURE_FLAG_SHOPPINGLIST_MULTIPLE_LISTS)
-				<div class="my-auto float-right">
-					<select class="custom-control custom-select bg-light font-weight-bold mt-md-0 mt-1"
-						id="selected-shopping-list">
-						@foreach($shoppingLists as $shoppingList)
-						<option @if($shoppingList->id == $selectedShoppingListId) selected="selected" @endif value="{{ $shoppingList->id }}" data-shoppinglist-name="{{ $shoppingList->name }}">{{ $shoppingList->name }} ({{ $shoppingList->item_count }})</option>
-						@endforeach
-					</select>
-				</div>
-				<div class="dropdown">
-					<a class="btn btn-outline-dark responsive-button m-1 mt-md-0 mb-md-0 float-right dropdown-toggle"
-						href="#"
-						data-toggle="dropdown">
-						{{ $__t('List actions') }}
-					</a>
-					<div class="dropdown-menu">
-						<a class="dropdown-item show-as-dialog-link"
-							href="{{ $U('/shoppinglist/new?embedded') }}">
-							{{ $__t('New shopping list') }}
-						</a>
-						<a class="dropdown-item show-as-dialog-link"
-							href="{{ $U('/shoppinglist/' . $selectedShoppingListId . '?embedded') }}">
-							{{ $__t('Edit shopping list') }}
-						</a>
-						<a id="delete-selected-shopping-list"
-							class="dropdown-item text-danger @if($selectedShoppingListId == 1) disabled text-muted @endif"
-							href="#">
-							{{ $__t('Delete shopping list') }}
-						</a>
-						<div class="dropdown-divider"></div>
-						<a id="print-shopping-list-button"
-							class="dropdown-item"
-							href="#">
-							{{ $__t('Print') }}
-						</a>
+					<div class="my-auto float-right">
+						<select class="custom-control custom-select bg-light font-weight-bold mt-md-0 mt-1"
+							id="selected-shopping-list">
+							@foreach($shoppingLists as $shoppingList)
+								<option @if($shoppingList->id == $selectedShoppingListId)
+									selected="selected"
+								@endif
+									value="{{ $shoppingList->id }}"
+									data-shoppinglist-name="{{ $shoppingList->name }}">{{ $shoppingList->name }} ({{ $shoppingList->item_count }})</option>
+							@endforeach
+						</select>
 					</div>
-				</div>
+					<div class="dropdown">
+						<a class="btn btn-outline-dark responsive-button m-1 mt-md-0 mb-md-0 float-right dropdown-toggle"
+							href="#"
+							data-toggle="dropdown">
+							{{ $__t('List actions') }}
+						</a>
+						<div class="dropdown-menu">
+							<a class="dropdown-item show-as-dialog-link"
+								href="{{ $U('/shoppinglist/new?embedded') }}">
+								{{ $__t('New shopping list') }}
+							</a>
+							<a class="dropdown-item show-as-dialog-link"
+								href="{{ $U('/shoppinglist/' . $selectedShoppingListId . '?embedded') }}">
+								{{ $__t('Edit shopping list') }}
+							</a>
+							<a id="delete-selected-shopping-list"
+								class="dropdown-item text-danger @if($selectedShoppingListId == 1) disabled text-muted @endif"
+								href="#">
+								{{ $__t('Delete shopping list') }}
+							</a>
+							<div class="dropdown-divider"></div>
+							<a id="print-shopping-list-button"
+								class="dropdown-item"
+								href="#">
+								{{ $__t('Print') }}
+							</a>
+							<div class="dropdown-divider"></div>
+							<a id="export-shopping-list-button"
+								class="dropdown-item"
+								href="#">
+								{{ $__t('Export to CSV') }}
+							</a>
+						</div>
+					</div>
 				@else
-				<input type="hidden"
-					name="selected-shopping-list"
-					id="selected-shopping-list"
-					value="1">
+					<input type="hidden"
+						name="selected-shopping-list"
+						id="selected-shopping-list"
+						value="1">
 				@endif
 			</div>
 		</div>
@@ -130,26 +138,26 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 				</div>
 
 				@if(GROCY_FEATURE_FLAG_STOCK)
-				<div class="dropdown d-inline">
-					<a class="btn btn-sm btn-outline-dark responsive-button mb-1 dropdown-toggle"
-						href="#"
-						data-toggle="dropdown">
-						{{ $__t('Stock actions') }}
-					</a>
-					<div class="dropdown-menu text-right">
-						<a id="add-all-items-to-stock-button"
-							class="dropdown-item"
-							href="#">{{ $__t('Add all list items to stock') }}</a>
-						@if(!boolval($userSettings['shopping_list_auto_add_below_min_stock_amount']))
-						<a id="add-products-below-min-stock-amount"
-							class="dropdown-item"
-							href="#">{{ $__t('Add products that are below defined min. stock amount') }}</a>
-						@endif
-						<a id="add-overdue-expired-products"
-							class="dropdown-item"
-							href="#">{{ $__t('Add overdue/expired products') }}</a>
+					<div class="dropdown d-inline">
+						<a class="btn btn-sm btn-outline-dark responsive-button mb-1 dropdown-toggle"
+							href="#"
+							data-toggle="dropdown">
+							{{ $__t('Stock actions') }}
+						</a>
+						<div class="dropdown-menu text-right">
+							<a id="add-all-items-to-stock-button"
+								class="dropdown-item"
+								href="#">{{ $__t('Add all list items to stock') }}</a>
+							@if(!boolval($userSettings['shopping_list_auto_add_below_min_stock_amount']))
+								<a id="add-products-below-min-stock-amount"
+									class="dropdown-item"
+									href="#">{{ $__t('Add products that are below defined min. stock amount') }}</a>
+							@endif
+							<a id="add-overdue-expired-products"
+								class="dropdown-item"
+								href="#">{{ $__t('Add overdue/expired products') }}</a>
+						</div>
 					</div>
-				</div>
 				@endif
 			</div>
 		</div>
@@ -212,124 +220,129 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 					<th class="allow-grouping">{{ $__t('Product') }} / <em>{{ $__t('Note') }}</em></th>
 					<th>{{ $__t('Amount') }}</th>
 					<th class="allow-grouping">{{ $__t('Product group') }}</th>
+					<th class="allow-grouping">{{ $__t('Recipe') }}</th>
 					<th class="d-none">Hidden status</th>
 					<th class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">{{ $__t('Last price (Unit)') }}</th>
 					<th class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">{{ $__t('Last price (Total)') }}</th>
 					<th class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif allow-grouping">{{ $__t('Default store') }}</th>
-					<th>{{ $__t('Barcodes') }}</th>
+					<th class="d-none">{{ $__t('Barcodes') }}</th>
 
 					@include('components.userfields_thead', array(
-					'userfields' => $userfields
+						'userfields' => $userfields
 					))
 					@include('components.userfields_thead', array(
-					'userfields' => $productUserfields
+						'userfields' => $productUserfields
 					))
 
 				</tr>
 			</thead>
 			<tbody class="d-none">
 				@foreach($listItems as $listItem)
-				<tr id="shoppinglistitem-{{ $listItem->id }}-row"
-					class="@if(FindObjectInArrayByPropertyValue($missingProducts, 'id', $listItem->product_id) !== null) table-info @endif @if($listItem->done == 1) text-muted text-strike-through @endif">
-					<td class="fit-content border-right">
-						<a class="btn btn-success btn-sm order-listitem-button"
-							href="#"
-							data-item-id="{{ $listItem->id }}"
-							data-item-done="{{ $listItem->done }}"
-							data-toggle="tooltip"
-							data-placement="right"
-							title="{{ $__t('Mark this item as done') }}">
-							<i class="fa-solid fa-check"></i>
-						</a>
-						<a class="btn btn-sm btn-info show-as-dialog-link"
-							href="{{ $U('/shoppinglistitem/' . $listItem->id . '?embedded&list=' . $selectedShoppingListId ) }}"
-							data-toggle="tooltip"
-							data-placement="right"
-							title="{{ $__t('Edit this item') }}">
-							<i class="fa-solid fa-edit"></i>
-						</a>
-						<a class="btn btn-sm btn-danger shoppinglist-delete-button"
-							href="#"
-							data-shoppinglist-id="{{ $listItem->id }}"
-							data-toggle="tooltip"
-							data-placement="right"
-							title="{{ $__t('Delete this item') }}">
-							<i class="fa-solid fa-trash"></i>
-						</a>
-						<a class="btn btn-sm btn-primary @if(!GROCY_FEATURE_FLAG_STOCK) d-none @endif @if(empty($listItem->product_id)) disabled @else shopping-list-stock-add-workflow-list-item-button @endif"
-							href="{{ $U('/purchase?embedded&flow=shoppinglistitemtostock&product=') }}{{ $listItem->product_id }}&amount={{ $listItem->amount }}&listitemid={{ $listItem->id }}&quId={{ $listItem->qu_id }}"
-							@if(!empty($listItem->product_id)) data-toggle="tooltip" title="{{ $__t('Add this item to stock') }}" @endif>
-							<i class="fa-solid fa-box"></i>
-						</a>
-					</td>
-					<td class="productcard-trigger cursor-link"
-						data-product-id="{{ $listItem->product_id }}">
-						@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
-					</td>
-					@if(!empty($listItem->product_id))
-					@php
-					$listItem->amount_origin_qu = $listItem->amount;
-					$product = FindObjectInArrayByPropertyValue($products, 'id', $listItem->product_id);
-					$productQuConversions = FindAllObjectsInArrayByPropertyValue($quantityUnitConversionsResolved, 'product_id', $product->id);
-					$productQuConversions = FindAllObjectsInArrayByPropertyValue($productQuConversions, 'from_qu_id', $product->qu_id_stock);
-					$productQuConversion = FindObjectInArrayByPropertyValue($productQuConversions, 'to_qu_id', $listItem->qu_id);
-					if ($productQuConversion)
-					{
-					$listItem->amount = $listItem->amount * $productQuConversion->factor;
-					}
-					@endphp
-					@endif
-					<td>
-						<span class="custom-sort d-none">{{$listItem->amount}}</span>
-						<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
-					</td>
-					<td>
-						@if(!empty($listItem->product_group_name)) {{ $listItem->product_group_name }} @else <span class="font-italic font-weight-light">{{ $__t('Ungrouped') }}</span> @endif
-					</td>
-					<td id="shoppinglistitem-{{ $listItem->id }}-status-info"
-						class="d-none">
-						@if(FindObjectInArrayByPropertyValue($missingProducts, 'id', $listItem->product_id) !== null) belowminstockamount @endif
-						@if($listItem->done == 1) xxDONExx @else xxUNDONExx @endif
-					</td>
-					<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
-						<span class="locale-number locale-number-currency">{{ $listItem->last_price_unit }}</span>
-					</td>
-					<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
-						<span class="locale-number locale-number-currency">{{ $listItem->last_price_total }}</span>
-					</td>
-					<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
-						{{ $listItem->default_shopping_location_name }}
-					</td>
-					<td>
-						@if($listItem->product_barcodes != null)
-						@foreach(explode(',', $listItem->product_barcodes) as $barcode)
-						@if(!empty($barcode))
-						<img class="barcode img-fluid pr-2"
-							data-barcode="{{ $barcode }}">
-						@endif
-						@endforeach
-						@endif
-					</td>
+					<tr id="shoppinglistitem-{{ $listItem->id }}-row"
+						class="@if(FindObjectInArrayByPropertyValue($missingProducts, 'id', $listItem->product_id) !== null) table-info @endif @if($listItem->done == 1) text-muted text-strike-through @endif">
+						<td class="fit-content border-right">
+							<a class="btn btn-success btn-sm order-listitem-button"
+								href="#"
+								data-item-id="{{ $listItem->id }}"
+								data-item-done="{{ $listItem->done }}"
+								data-toggle="tooltip"
+								data-placement="right"
+								title="{{ $__t('Mark this item as done') }}">
+								<i class="fa-solid fa-check"></i>
+							</a>
+							<a class="btn btn-sm btn-info show-as-dialog-link"
+								href="{{ $U('/shoppinglistitem/' . $listItem->id . '?embedded&list=' . $selectedShoppingListId) }}"
+								data-toggle="tooltip"
+								data-placement="right"
+								title="{{ $__t('Edit this item') }}">
+								<i class="fa-solid fa-edit"></i>
+							</a>
+							<a class="btn btn-sm btn-danger shoppinglist-delete-button"
+								href="#"
+								data-shoppinglist-id="{{ $listItem->id }}"
+								data-toggle="tooltip"
+								data-placement="right"
+								title="{{ $__t('Delete this item') }}">
+								<i class="fa-solid fa-trash"></i>
 
-					@include('components.userfields_tbody', array(
-					'userfields' => $userfields,
-					'userfieldValues' => FindAllObjectsInArrayByPropertyValue($userfieldValues, 'object_id', $listItem->id)
-					))
-					@include('components.userfields_tbody', array(
-					'userfields' => $productUserfields,
-					'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productUserfieldValues, 'object_id', $listItem->product_id)
-					))
 
-				</tr>
+														</a>
+							<a class="btn btn-sm btn-primary @if(!GROCY_FEATURE_FLAG_STOCK) d-none @endif @if(empty($listItem->product_id)) disabled @else shopping-list-stock-add-workflow-list-item-button @endif"
+								href="{{ $U('/purchase?embedded&flow=shoppinglistitemtostock&product=') }}{{ $listItem->product_id }}&amount={{ $listItem->amount }}&listitemid={{ $listItem->id }}&quId={{ $listItem->qu_id }}"
+								@if(!empty($listItem->product_id)) data-toggle="tooltip" title="{{ $__t('Add this item to stock') }}" @endif>
+								<i class="fa-solid fa-box"></i>
+							</a>
+						</td>
+						<td class="productcard-trigger cursor-link"
+							data-product-id="{{ $listItem->product_id }}">
+							@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+						</td>
+						@if(!empty($listItem->product_id))
+							@php
+								$listItem->amount_origin_qu = $listItem->amount;
+								$product = FindObjectInArrayByPropertyValue($products, 'id', $listItem->product_id);
+								$productQuConversions = FindAllObjectsInArrayByPropertyValue($quantityUnitConversionsResolved, 'product_id', $product->id);
+								$productQuConversions = FindAllObjectsInArrayByPropertyValue($productQuConversions, 'from_qu_id', $product->qu_id_stock);
+								$productQuConversion = FindObjectInArrayByPropertyValue($productQuConversions, 'to_qu_id', $listItem->qu_id);
+								if ($productQuConversion) {
+									$listItem->amount = $listItem->amount * $productQuConversion->factor;
+								}
+							@endphp
+						@endif
+						<td>
+							<span class="custom-sort d-none">{{$listItem->amount}}</span>
+							<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
+						</td>
+						<td>
+							@if(!empty($listItem->product_group_name)) {{ $listItem->product_group_name }} @else <span class="font-italic font-weight-light">{{ $__t('Ungrouped') }}</span> @endif
+						</td>
+						<td>
+							{{ $listItem->recipe_name }}
+						</td>
+						<td id="shoppinglistitem-{{ $listItem->id }}-status-info"
+							class="d-none">
+							@if(FindObjectInArrayByPropertyValue($missingProducts, 'id', $listItem->product_id) !== null) belowminstockamount @endif
+							@if($listItem->done == 1) xxDONExx @else xxUNDONExx @endif
+						</td>
+						<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
+							<span class="locale-number locale-number-currency">{{ $listItem->last_price_unit }}</span>
+						</td>
+						<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
+							<span class="locale-number locale-number-currency">{{ $listItem->last_price_total }}</span>
+						</td>
+						<td class="@if(!GROCY_FEATURE_FLAG_STOCK_PRICE_TRACKING) d-none @endif">
+							{{ $listItem->default_shopping_location_name }}
+						</td>
+						<td class="d-none">
+							@if($listItem->product_barcodes != null)
+								@foreach(explode(',', $listItem->product_barcodes) as $barcode)
+									@if(!empty($barcode))
+										<img class="barcode img-fluid pr-2"
+											data-barcode="{{ $barcode }}">
+									@endif
+								@endforeach
+							@endif
+						</td>
+
+						@include('components.userfields_tbody', array(
+							'userfields' => $userfields,
+							'userfieldValues' => FindAllObjectsInArrayByPropertyValue($userfieldValues, 'object_id', $listItem->id)
+						))
+						@include('components.userfields_tbody', array(
+							'userfields' => $productUserfields,
+							'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productUserfieldValues, 'object_id', $listItem->product_id)
+						))
+
+					</tr>
 				@endforeach
 			</tbody>
 		</table>
 	</div>
 
 	@if(boolval($userSettings['shopping_list_show_calendar']))
-	<div class="col-12 col-md-4 mt-md-2 d-print-none">
-		@include('components.calendarcard')
-	</div>
+		<div class="col-12 col-md-4 mt-md-2 d-print-none">
+			@include('components.calendarcard')
+		</div>
 	@endif
 
 	<div class="@if(boolval($userSettings['shopping_list_show_calendar'])) col-12 col-md-8 @else col-12 @endif d-print-none pt-2">
@@ -380,9 +393,9 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 			{{ $__t("Shopping list") }}
 		</h1>
 		@if (FindObjectInArrayByPropertyValue($shoppingLists, 'id', $selectedShoppingListId)->name != $__t("Shopping list"))
-		<h3 class="text-center">
-			{{ FindObjectInArrayByPropertyValue($shoppingLists, 'id', $selectedShoppingListId)->name }}
-		</h3>
+			<h3 class="text-center">
+				{{ FindObjectInArrayByPropertyValue($shoppingLists, 'id', $selectedShoppingListId)->name }}
+			</h3>
 		@endif
 		<h6 class="text-center mb-4">
 			{{ $__t('Time of printing') }}:
@@ -400,43 +413,43 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 						<th>{{ $__t('Product group') }}</th>
 
 						@include('components.userfields_thead', array(
-						'userfields' => $userfields
+							'userfields' => $userfields
 						))
 						@include('components.userfields_thead', array(
-						'userfields' => $productUserfields
+							'userfields' => $productUserfields
 						))
 						@include('components.userfields_thead', array(
-						'userfields' => $productGroupUserfields
+							'userfields' => $productGroupUserfields
 						))
 					</tr>
 				</thead>
 				<tbody>
 					@foreach($listItems as $listItem)
-					<tr>
-						<td>
-							@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
-						</td>
-						<td>
-							<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
-						</td>
-						<td>
-							@if(!empty($listItem->product_group_name)) {{ $listItem->product_group_name }} @else <span class="font-italic font-weight-light">{{ $__t('Ungrouped') }}</span> @endif
-						</td>
+						<tr>
+							<td>
+								@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+							</td>
+							<td>
+								<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
+							</td>
+							<td>
+								@if(!empty($listItem->product_group_name)) {{ $listItem->product_group_name }} @else <span class="font-italic font-weight-light">{{ $__t('Ungrouped') }}</span> @endif
+							</td>
 
-						@include('components.userfields_tbody', array(
-						'userfields' => $userfields,
-						'userfieldValues' => FindAllObjectsInArrayByPropertyValue($userfieldValues, 'object_id', $listItem->id)
-						))
-						@include('components.userfields_tbody', array(
-						'userfields' => $productUserfields,
-						'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productUserfieldValues, 'object_id', $listItem->product_id)
-						))
-						@include('components.userfields_tbody', array(
-						'userfields' => $productGroupUserfields,
-						'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productGroupUserfieldValues, 'object_id', $listItem->product_group_id)
-						))
+							@include('components.userfields_tbody', array(
+								'userfields' => $userfields,
+								'userfieldValues' => FindAllObjectsInArrayByPropertyValue($userfieldValues, 'object_id', $listItem->id)
+							))
+							@include('components.userfields_tbody', array(
+								'userfields' => $productUserfields,
+								'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productUserfieldValues, 'object_id', $listItem->product_id)
+							))
+							@include('components.userfields_tbody', array(
+								'userfields' => $productGroupUserfields,
+								'userfieldValues' => FindAllObjectsInArrayByPropertyValue($productGroupUserfieldValues, 'object_id', $listItem->product_group_id)
+							))
 
-					</tr>
+						</tr>
 					@endforeach
 				</tbody>
 			</table>
@@ -444,10 +457,10 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 	</div>
 	<div class="w-75 print-layout-container print-layout-type-list d-none">
 		@foreach($listItems as $listItem)
-		<div class="py-0">
-			<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
-			@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
-		</div><br>
+			<div class="py-0">
+				<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
+				@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+			</div><br>
 		@endforeach
 	</div>
 	<div class="w-75 pt-3">
@@ -459,6 +472,6 @@ $listItem->last_price_total = $listItem->price * $listItem->amount;
 </div>
 
 @include('components.productcard', [
-'asModal' => true
+	'asModal' => true
 ])
 @stop

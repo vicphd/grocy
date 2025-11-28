@@ -638,3 +638,65 @@ if ($(window).width() < 768 || !Grocy.FeatureFlags.GROCY_FEATURE_FLAG_STOCK)
 {
 	$("#filter-container").removeClass("border-bottom");
 }
+
+// CSV Export functionality
+$("#export-shopping-list-button").on("click", function(e)
+{
+	e.preventDefault();
+
+	var csvContent = "Product,Amount,Unit,Note,Product Group,Recipe\r\n";
+
+	shoppingListTable.rows({ search: 'applied' }).every(function(rowIdx, tableLoop, rowLoop)
+	{
+		// Get the raw data for the row (array of column values)
+		// Indices based on the table definition in shoppinglist.blade.php:
+		// 0: Table options (hidden)
+		// 1: Product / Note
+		// 2: Amount
+		// 3: Product Group
+		// 4: Recipe
+		// ...
+		var data = this.data();
+
+		// Column 1: Product / Note
+		// The content is HTML, we need to parse it
+		var productCellHtml = data[1];
+		var productCellDom = $('<div>' + productCellHtml + '</div>');
+		var product = productCellDom.clone().children('em').remove().end().text().trim();
+		var note = productCellDom.find('em').text().trim();
+
+		// Column 2: Amount
+		// The content is HTML
+		var amountCellHtml = data[2];
+		var amountCellDom = $('<div>' + amountCellHtml + '</div>');
+		var amount = amountCellDom.find('.locale-number-quantity-amount').text().trim();
+		var unit = amountCellDom.text().trim().replace(amount, '').trim();
+
+		// Column 3: Product Group
+		var productGroup = $('<div>' + data[3] + '</div>').text().trim();
+
+		// Column 4: Recipe
+		var recipe = $('<div>' + data[4] + '</div>').text().trim();
+
+		// Handle commas and quotes in content
+		product = '"' + product.replace(/"/g, '""') + '"';
+		note = '"' + note.replace(/"/g, '""') + '"';
+		productGroup = '"' + productGroup.replace(/"/g, '""') + '"';
+		recipe = '"' + recipe.replace(/"/g, '""') + '"';
+
+		csvContent += product + "," + amount + "," + unit + "," + note + "," + productGroup + "," + recipe + "\r\n";
+	});
+
+	// Create a Blob from the CSV content
+	var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+	var link = document.createElement("a");
+	var url = URL.createObjectURL(blob);
+	link.setAttribute("href", url);
+	var fileName = "shopping_list_export_" + moment().format("YYYY-MM-DD_HH-mm-ss") + ".csv";
+	link.setAttribute("download", fileName);
+	link.style.visibility = 'hidden';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+});
+
