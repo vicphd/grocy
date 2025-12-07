@@ -3,3 +3,8 @@ embedded.txt
 /.release
 /packages
 /public/packages
+launch.txt
+launch.bat
+.devtools
+.tx
+.vscode
